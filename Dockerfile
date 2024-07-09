@@ -1,28 +1,20 @@
-# Використовуємо офіційний образ Golang для створення артефакту побудови.
-FROM golang:1.22 AS build
+# Use the official Golang image for building and running the Go application
+FROM golang:1.22
 
-# Копіюємо локальний код до образу контейнера.
-WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /go/src/app
+
+# Copy the entire project directory to the working directory
 COPY . .
 
-# Виконуємо tidy для модулів Go
+# Run go mod tidy to ensure dependencies are installed
 RUN go mod tidy
 
-# Збираємо Go додаток
+# Build the Go application
 RUN go build -o main ./cmd/http/main.go
 
-# Використовуємо мінімальний базовий образ для копіювання бінарного файлу.
-FROM alpine:3.14
-
-WORKDIR /root/
-
-# Копіюємо попередньо побудований виконуваний файл з попереднього етапу.
-COPY --from=build ./main .
-# Встановлюємо дозвіл на виконання для файлу main.
-RUN chmod +x main
-
-# Вказуємо, що контейнер повинен слухати порт 8080
+# Expose the port the application will run on
 EXPOSE 8080
 
-# Команда для запуску бінарного файлу.
+# Set the command to run the application
 CMD ["./main"]
